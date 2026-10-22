@@ -10,14 +10,12 @@ import com.community.reporting.enums.IncidentStatus;
 
 public record IncidentResponse(
 
-    Long id,
+  
     IncidentCategory category,
     String description,
     BigDecimal latitude,
     BigDecimal longitude,
     IncidentStatus status,
-    Long reportedByUserId,
-    String reportedByName,
     LocalDateTime createdAt
 
 ) {}

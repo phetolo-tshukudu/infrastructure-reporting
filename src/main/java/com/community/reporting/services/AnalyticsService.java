@@ -53,14 +53,12 @@ public class AnalyticsService {
             .findTop10ByOrderByCreatedAtDesc()
             .stream()
             .map(incident -> new IncidentResponse(
-                incident.getId(),
+               
                 incident.getCategory(),
                 incident.getDescription(),
                 incident.getLatitude(),
                 incident.getLongitude(),
                 incident.getStatus(),
-                incident.getReportedBy().getId(),
-                incident.getReportedBy().getName(),
                 incident.getCreatedAt()
             ))
             .toList();

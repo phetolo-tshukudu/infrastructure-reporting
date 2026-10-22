@@ -127,6 +127,25 @@ Example:
 GET /api/incidents?status=REPORTED&category=POTHOLE&page=0&size=20&sort=createdAt,desc
 ```
 
+## Incident response format
+
+Incident creation, retrieval, status updates, and recent-incident analytics use the following response fields. Paginated listings return these objects inside `content`:
+
+```json
+{
+  "category": "POTHOLE",
+  "description": "Large pothole near the intersection.",
+  "latitude": -25.7461111,
+  "longitude": 28.1880556,
+  "status": "REPORTED",
+  "createdAt": "2026-10-23T10:00:00"
+}
+```
+
+The incident `id`, reporter's name (`reportedByName`), and reporter's user ID (`reportedByUserId`) have been removed from `IncidentResponse`. Clients must no longer expect those fields. The incident ID still exists in the database and is required for the `/{id}`, `/{id}/status`, and `/{id}/history` paths, but it is no longer returned in incident response objects. The reporter relationship remains stored internally for ownership and filtering.
+
+Incident response objects no longer include the reporter's name or user ID. However, `/api/incidents/user/{userId}` remains public and can still associate a supplied user ID with reports. Descriptions and precise locations may also reveal identifying details. Status history uses a separate response containing `id`, `oldStatus`, `newStatus`, `updatedByUserId`, `updatedByName`, and `createdAt`; the updater fields refer to the staff member who changed the status.
+
 ## Postman examples
 
 For JSON requests, select **Body > raw > JSON** and use `Content-Type: application/json`.
@@ -197,7 +216,7 @@ Description is required and limited to 1,000 characters. Latitude must be betwee
 
 ### Update incident status
 
-Send `PATCH http://localhost:8080/api/incidents/1/status` with a worker/admin token. Replace `1` with the incident ID:
+Send `PATCH http://localhost:8080/api/incidents/1/status` with a worker/admin token. Replace `1` with a known incident ID. Incident responses no longer include this ID; for local manual testing, an authorized database operator can look it up in the `incidents` table. The path requires the incident's ID, not a user ID:
 
 ```json
 {
@@ -244,7 +263,7 @@ From PowerShell:
 .\mvnw.cmd test
 ```
 
-The latest verified suite contains 12 passing tests covering:
+The previously verified suite contained 12 passing tests covering the following behavior. It has not been rerun for the latest incident-response field removal:
 
 - Authentication errors and duplicate registration, including a duplicate insert race.
 - Missing resources, status-transition validation, and expected HTTP error mapping.

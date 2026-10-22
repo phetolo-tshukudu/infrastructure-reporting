@@ -61,14 +61,11 @@ public class IncidentService {
     private IncidentResponse toResponse(Incident incident) {
 
         return new IncidentResponse(
-            incident.getId(),
             incident.getCategory(),
             incident.getDescription(),
             incident.getLatitude(),
             incident.getLongitude(),
             incident.getStatus(),
-            incident.getReportedBy().getId(),
-            incident.getReportedBy().getName(),
             incident.getCreatedAt()
         );
     }
