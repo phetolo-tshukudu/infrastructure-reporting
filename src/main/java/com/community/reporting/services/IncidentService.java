@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.community.reporting.dto.incident.CreateIncidentRequest;
+import com.community.reporting.dto.incident.IncidentHistoryResponse;
 import com.community.reporting.dto.incident.IncidentResponse;
 import com.community.reporting.dto.incident.IncidentUpdateResponse;
 import com.community.reporting.dto.incident.UpdateIncidentStatusRequest;
@@ -61,6 +62,7 @@ public class IncidentService {
     private IncidentResponse toResponse(Incident incident) {
 
         return new IncidentResponse(
+        	incident.getId(),
             incident.getCategory(),
             incident.getDescription(),
             incident.getLatitude(),
@@ -204,24 +206,85 @@ public class IncidentService {
     }
     
     @Transactional(readOnly = true)
-    public List<IncidentUpdateResponse> getIncidentHistory(Long incidentId) {
+    public IncidentHistoryResponse getIncidentHistory(Long incidentId) {
 
         if (!incidentRepository.existsById(incidentId)) {
             throw new ResourceNotFoundException("Incident not found");
         }
+        
+        List<IncidentUpdateResponse> updates = incidentUpdateRepository
+                .findByIncidentIdOrderByCreatedAtAsc(incidentId).stream().map(update->{
+                	
+					return new IncidentUpdateResponse(
+							update.getIncident().getId(),
+							update.getOldStatus(),
+							update.getNewStatus(),
+							update.getUpdatedBy().getId(),
+							update.getUpdatedBy().getName(),
+							update.getCreatedAt()
+					);
+                }).toList();
+        if(updates.isEmpty()) {
+			return List.of(new IncidentUpdateResponse(
+					incidentId,
+					null,
+					null,
+					null,
+					null,
+					null
+			)).stream().findFirst().map(update->{
+				return new IncidentHistoryResponse(
+						update.id(),
+						update.updatedByName(),
+						update.newStatus(),List.of(update));
+			}).orElseThrow(()->new ResourceNotFoundException("Incident not found"));
+		}
+		
+		if(updates.size()==1) {
+			return new IncidentHistoryResponse(
+					updates.get(0).id(),
+					updates.get(0).updatedByName(),
+					updates.get(0).newStatus(),updates);
+		}
+		
+		if(updates.size()>1) {
+			return new IncidentHistoryResponse(
+					updates.get(updates.size()-1).id(),
+					updates.get(updates.size()-1).updatedByName(),
+					updates.get(updates.size()-1).newStatus(),updates);
+		}
+		
+		return null;
+	}
+	
+	@Transactional(readOnly = true)
+	public IncidentHistoryResponse getLatestIncidentUpdate(Long incidentId) {
 
-        return incidentUpdateRepository
-            .findByIncidentIdOrderByCreatedAtAsc(incidentId)
-            .stream()
-            .map(update -> new IncidentUpdateResponse(
-                update.getId(),
-                update.getOldStatus(),
-                update.getNewStatus(),
-                update.getUpdatedBy().getId(),
-                update.getUpdatedBy().getName(),
-                update.getCreatedAt()
-            ))
-            .toList();
+		if (!incidentRepository.existsById(incidentId)) {
+			throw new ResourceNotFoundException("Incident not found");
+		}
+		
+		List<IncidentUpdateResponse> updates = incidentUpdateRepository
+				.findByIncidentIdOrderByCreatedAtAsc(incidentId).stream().map(update->{
+					
+					return new IncidentUpdateResponse(
+							update.getIncident().getId(),
+							update.getOldStatus(),
+							update.getNewStatus(),
+							update.getUpdatedBy().getId(),
+							update.getUpdatedBy().getName(),
+							update.getCreatedAt()
+					);
+				}).toList();
+		if(updates.isEmpty()) {
+		}
+        
+        return new IncidentHistoryResponse(
+        		updates.getLast().id(),
+        		updates.getLast().updatedByName(),
+        		updates.getLast().newStatus(),updates);
+			
+         
     }
     
     

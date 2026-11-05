@@ -7,6 +7,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import com.community.reporting.dto.analytics.DailyIncidentCountResponse;
 import com.community.reporting.dto.incident.CreateIncidentRequest;
+import com.community.reporting.dto.incident.IncidentHistoryResponse;
 import com.community.reporting.dto.incident.IncidentResponse;
 import com.community.reporting.dto.incident.IncidentUpdateResponse;
 import com.community.reporting.dto.incident.UpdateIncidentStatusRequest;
@@ -119,7 +120,7 @@ public class IncidentController {
     }
     
     @GetMapping("/{id}/history")
-    public ResponseEntity<List<IncidentUpdateResponse>> getIncidentHistory(
+    public ResponseEntity<IncidentHistoryResponse> getIncidentHistory(
             @PathVariable Long id) {
 
         return ResponseEntity.ok(

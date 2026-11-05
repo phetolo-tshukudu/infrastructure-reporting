@@ -39,3 +39,4 @@ CREATE TABLE incident_updates (
         FOREIGN KEY (updated_by)
         REFERENCES users(id)
 );
+

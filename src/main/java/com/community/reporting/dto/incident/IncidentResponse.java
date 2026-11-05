@@ -10,7 +10,7 @@ import com.community.reporting.enums.IncidentStatus;
 
 public record IncidentResponse(
 
-  
+	Long id,
     IncidentCategory category,
     String description,
     BigDecimal latitude,
